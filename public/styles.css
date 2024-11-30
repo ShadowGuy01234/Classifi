@@ -1,0 +1,116 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  text-align: center;
+  padding: 50px;
+}
+
+h1 {
+  color: #4CAF50;
+}
+
+
+form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+}
+
+input[type="file"] {
+  margin: 10px 0;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+.loading-bar {
+  display: none;
+  margin-top: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  background-color: #f3f3f3;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  width: 0%;
+  height: 20px;
+  background-color: #4CAF50;
+  transition: width 0.3s ease-in-out;
+}
+
+#loadingText {
+  margin-top: 5px;
+}
+
+
+.output {
+  margin-top: 20px;
+  background: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+/* Table Styles */
+table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 80%;
+  text-align: left;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+table th {
+  background-color: #4CAF50;
+  color: white;
+  text-align: center;
+}
+
+table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Chart Container */
+.chart-container {
+  margin-top: 30px;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#downloadButton {
+  display: none;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#downloadButton:hover {
+  background-color: #45a049;
+}
