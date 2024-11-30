@@ -1,0 +1,27 @@
+{
+  "name": "classifi",
+  "version": "1.0.0",
+  "description": "AI-powered document classification system built with Node.js and Express.js.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "document-classification",
+    "AI",
+    "Node.js",
+    "Express.js",
+    "file-upload"
+  ],
+  "author": "ShadowGuy01234",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "multer": "^1.4.2",
+    "unzipper": "^0.10.11"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
