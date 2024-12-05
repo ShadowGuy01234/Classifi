@@ -92,7 +92,7 @@ ClassiFi can be applied to various industries, including:
   npm run dev
   ```
 
-The server will be running at [http://localhost:3000](http://localhost:3000).
+The server will be running at [http://localhost:5000](http://localhost:5000).
 
 ---
 
