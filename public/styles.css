@@ -7,9 +7,8 @@ body {
 }
 
 h1 {
-  color: #4CAF50;
+  color: #4caf50;
 }
-
 
 form {
   background: #fff;
@@ -24,12 +23,13 @@ input[type="file"] {
 }
 
 button {
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  margin: 10px 0;
 }
 
 button:hover {
@@ -51,14 +51,13 @@ button:hover {
 .progress-bar-inner {
   width: 0%;
   height: 20px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   transition: width 0.3s ease-in-out;
 }
 
 #loadingText {
   margin-top: 5px;
 }
-
 
 .output {
   margin-top: 20px;
@@ -77,13 +76,14 @@ table {
   text-align: left;
 }
 
-table th, table td {
+table th,
+table td {
   border: 1px solid #ddd;
   padding: 8px;
 }
 
 table th {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   text-align: center;
 }
@@ -104,7 +104,7 @@ table tr:nth-child(even) {
   display: none;
   margin-top: 15px;
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 5px;

@@ -16,7 +16,28 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "../public")));
 
-const upload = multer({ dest: path.join(__dirname, "uploads/") });
+const uploadsDir = path.join(__dirname, "uploads");
+const uploadedFilesDir = path.join(uploadsDir, "uploaded_files");
+const extractPath = path.join(uploadsDir, "extracted");
+const classifiedOutputPath = path.join(uploadsDir, "classified");
+
+[uploadsDir, uploadedFilesDir, extractPath, classifiedOutputPath].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadedFilesDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 
 const extractTextFromFile = async (filePath) => {
   const ext = path.extname(filePath).toLowerCase();
@@ -80,6 +101,49 @@ const extractTextFromFile = async (filePath) => {
   return extractedText;
 };
 
+// Function to reset feedback log
+const resetFeedbackLog = () => {
+  const feedbackDir = path.join(__dirname, "feedback");
+  const feedbackFilePath = path.join(feedbackDir, "feedback_log.json");
+
+  if (!fs.existsSync(feedbackDir)) {
+    fs.mkdirSync(feedbackDir, { recursive: true });
+  }
+
+  fs.writeFileSync(feedbackFilePath, JSON.stringify([], null, 2), "utf-8");
+};
+
+// Route for feedback submission
+app.post("/submit-feedback", (req, res) => {
+  const { fileName, oldCategory, newCategory } = req.body;
+  const feedbackEntry = {
+    timestamp: new Date().toISOString(),
+    fileName,
+    oldCategory,
+    newCategory
+  };
+
+  const feedbackDir = path.join(__dirname, 'feedback');
+  const feedbackFilePath = path.join(feedbackDir, 'feedback_log.json');
+
+  try {
+    let feedbackData = [];
+    if (fs.existsSync(feedbackFilePath)) {
+      feedbackData = JSON.parse(fs.readFileSync(feedbackFilePath, 'utf-8'));
+    }
+
+    feedbackData.push(feedbackEntry);
+
+    fs.writeFileSync(feedbackFilePath, JSON.stringify(feedbackData, null, 2), 'utf-8');
+
+    console.log("Feedback submitted and logged:", feedbackEntry);
+    res.status(200).json({ message: "Feedback submitted successfully" });
+  } catch (error) {
+    console.error("Error logging feedback:", error);
+    res.status(500).json({ message: "Error submitting feedback", error: error.message });
+  }
+});
+
 // Route for ZIP file upload and classification
 app.post("/classify-zip", upload.single("documents"), async (req, res) => {
   const uploadedFile = req.file;
@@ -88,17 +152,22 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
     return res.status(400).json({ error: "No file uploaded" });
   }
 
+  // Reset feedback log when a new file is uploaded
+  resetFeedbackLog();
+
   const zipFilePath = uploadedFile.path;
-  const extractPath = path.join(__dirname, "uploads", "extracted");
-  const classifiedOutputPath = path.join(__dirname, "uploads", "classified");
 
   try {
     if (fs.existsSync(classifiedOutputPath)) {
       fs.rmSync(classifiedOutputPath, { recursive: true, force: true });
     }
-
-    fs.mkdirSync(extractPath, { recursive: true });
     fs.mkdirSync(classifiedOutputPath, { recursive: true });
+
+    if (fs.existsSync(extractPath)) {
+      fs.rmSync(extractPath, { recursive: true, force: true });
+    }
+    fs.mkdirSync(extractPath, { recursive: true });
+
     await fs
       .createReadStream(zipFilePath)
       .pipe(unzipper.Extract({ path: extractPath }))
@@ -111,6 +180,7 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
         .status(400)
         .json({ error: "No valid files found in the ZIP." });
     }
+
     const results = {};
     for (const file of files) {
       const filePath = path.join(extractPath, file);
@@ -130,11 +200,14 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
             }
           );
         });
+
         const cleanedCategory = classification
           .replace("Predicted Category: ", "")
           .replace(/\s+/g, "_");
+
         const categoryPath = path.join(classifiedOutputPath, cleanedCategory);
         fs.mkdirSync(categoryPath, { recursive: true });
+
         const destinationPath = path.join(categoryPath, file);
         fs.copyFileSync(filePath, destinationPath);
 
@@ -144,12 +217,7 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
       }
     }
 
-    // ZIP file of the classified documents
-    const outputZipPath = path.join(
-      __dirname,
-      "uploads",
-      "classified_documents.zip"
-    );
+    const outputZipPath = path.join(uploadsDir, "classified_documents.zip");
     const output = fs.createWriteStream(outputZipPath);
     const archive = archiver("zip", { zlib: { level: 9 } });
 
@@ -173,20 +241,15 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({
-        error: "An error occurred during ZIP extraction or classification.",
-      });
-  } finally {
-    fs.rmSync(zipFilePath, { force: true });
-    fs.rmSync(extractPath, { recursive: true, force: true });
+    res.status(500).json({
+      error: "An error occurred during ZIP extraction or classification.",
+    });
   }
 });
 
 // Route to download the classified ZIP file
 app.get("/download-classified-zip", (req, res) => {
-  const zipPath = path.join(__dirname, "uploads", "classified_documents.zip");
+  const zipPath = path.join(uploadsDir, "classified_documents.zip");
 
   res.download(zipPath, "classified_documents.zip", (err) => {
     if (err) {
@@ -198,7 +261,7 @@ app.get("/download-classified-zip", (req, res) => {
   });
 });
 
-// Star Server
+// Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -11,6 +11,7 @@ ClassiFi is an AI-powered document classification system designed to automate an
 - **AI Model Integration**: Uses a customizable Python-based model for document classification.
 - **Scalable Backend**: Built with Node.js and Express.js.
 - **Customizable Model Retraining**: Add labeled data and retrain the classification model as needed.
+- **Feedback Integration**: Allows users to provide feedback on classifications to improve model accuracy.
 
 ---
 
@@ -95,52 +96,44 @@ The server will be running at [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Retraining (Optional)
+## Feedback and Model Retraining
 
-Users can manually label additional data and use the retraining script to improve the model. Retrained models incorporate new insights to enhance future classification accuracy.
+ClassiFi includes a powerful **Feedback System** that allows users to provide feedback on classification results. This feedback is used to retrain and improve the AI model over time.
 
-### Steps to Retrain
-1. **Prepare the Labeled Data**:
-   - Organize labeled data in directories where each directory corresponds to a category, and the files within are samples of that category.
+### How It Works:
+1. **Feedback Submission**:  
+   Users can review the classification results and submit corrections for any misclassified documents. The feedback is logged in a JSON file named `feedback_log.json`, stored in the `feedback` directory.
 
-2. **Run the Retraining Script**:
-   - Use the `train_and_save_model.py` script to retrain the model. Provide the path to the labeled data directory as an argument.
-   ```bash
-   python train_and_save_model.py
-   ```
-
-3. **Save and Deploy the Updated Model**:
-   - Once training is complete, the retrained model will be saved in the specified location as configured in the script.
-   - Replace the old model with the retrained model in the appropriate directory to use it in future classifications.
-
-4. **Deactivate Virtual Environment (Optional)**:
-   - After retraining, you can deactivate the virtual environment:
-   ```bash
-   deactivate
-   ```
+2. **Model Retraining**:  
+   The feedback data is processed by the `retrain_on_feedback.py` script, which updates the model to reflect the corrections provided by users.
 
 ---
 
-## API Endpoints
+### Retraining with Feedback
 
-### `GET /`
-**Description**: Home page of the API.  
-**Response**:
-```json
-"Welcome to ClassiFi API! Use POST /upload to classify your documents."
-```
+To use the feedback for retraining the model, follow these steps:
 
-### `POST /upload`
-**Description**: Upload a ZIP file containing documents to classify.  
-**Request**: Upload a ZIP file using the key `file` in the form-data.  
-Example CURL request:
-```bash
-curl -X POST -F "file=@path/to/your/file.zip" http://localhost:3000/upload
-```
-**Response**:
-```json
-"Files successfully uploaded and extracted!"
-```
+1. **Ensure Feedback is Logged**:  
+   Verify that the `feedback/feedback_log.json` file contains user feedback in the following format:
+   ```json
+   [
+     {
+       timestamp: "example_time",
+       file_name: "example.pdf",
+       oldCategory: "Business",
+       newCategory: "Education"
+     },
+   ]
+   ```
+
+2. **Run the Retraining Script**:  
+   Use the `retrain_on_feedback.py` script to incorporate feedback and update the model:
+   ```bash
+   python retrain_on_feedback.py
+   ```
+
+3. **Deploy the Updated Model**:  
+   After retraining, replace the old model with the updated model to ensure the latest changes are applied to future classifications.
 
 ---
 
@@ -151,7 +144,8 @@ Classifi/
 ├── server/               # Backend server code
 │   ├── app.js            # Main server file for handling requests
 │   ├── python_model/     # Folder for Python model and related files
-│   ├── uploads/          # Folder for storing uploaded files
+│   ├── uploads/          # Directory for storing uploaded files
+│   ├── feedback/         # Directory for storing feedback data
 │   └── package.json      # Project metadata and backend dependencies
 ├── public/               # Frontend files (HTML, CSS, JS)
 │   ├── index.html        # Main HTML file
