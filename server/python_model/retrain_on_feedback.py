@@ -5,6 +5,7 @@ import shutil
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 from preprocess import clean_text
@@ -108,9 +109,9 @@ def load_labeled_data_from_dirs(data_dir):
 def retrain_model_with_feedback(
     uploads_dir, 
     data_dir, 
-    feedback_file='../feedback/feedback_log.json', 
-    model_path='model.pkl', 
-    vectorizer_path='vectorizer.pkl'
+    feedback_file='./feedback/feedback_log.json', 
+    model_path='./python_model/model.pkl', 
+    vectorizer_path='./python_model/vectorizer.pkl'
 ):
     """
     Retrain the model based on user feedback.
@@ -161,7 +162,6 @@ def retrain_model_with_feedback(
         'classifier__kernel': ['linear', 'rbf']
     }
 
-    from sklearn.model_selection import GridSearchCV
     print("Performing GridSearchCV...")
     grid_search = GridSearchCV(pipeline, param_grid, cv=2, n_jobs=-1, scoring='accuracy')
     grid_search.fit(X_train, y_train)
@@ -182,9 +182,9 @@ def retrain_model_with_feedback(
     print("Retraining and saving completed.")
 
 def main():
-    uploads_dir = "../uploads"
-    data_dir = "../uploads/extracted"
-    feedback_file = '../feedback/feedback_log.json'
+    uploads_dir = "./uploads"
+    data_dir = "./uploads/extracted"
+    feedback_file = './feedback/feedback_log.json'
     
     retrain_model_with_feedback(uploads_dir, data_dir, feedback_file)
 

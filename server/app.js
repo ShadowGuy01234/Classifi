@@ -152,8 +152,8 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
     return res.status(400).json({ error: "No file uploaded" });
   }
 
-  // Reset feedback log when a new file is uploaded
   resetFeedbackLog();
+
 
   const zipFilePath = uploadedFile.path;
 
@@ -168,6 +168,7 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
     }
     fs.mkdirSync(extractPath, { recursive: true });
 
+    // Extract ZIP file
     await fs
       .createReadStream(zipFilePath)
       .pipe(unzipper.Extract({ path: extractPath }))
@@ -181,42 +182,47 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
         .json({ error: "No valid files found in the ZIP." });
     }
 
-    const results = {};
-    for (const file of files) {
-      const filePath = path.join(extractPath, file);
-      const textContent = await extractTextFromFile(filePath);
-
-      if (textContent !== "Error during text extraction") {
-        const classification = await new Promise((resolve, reject) => {
-          exec(
-            `python3 ./python_model/classifier.py "${filePath}"`,
-            (error, stdout, stderr) => {
-              if (error) {
-                console.error(`Error classifying ${file}: ${stderr}`);
-                resolve("Error during classification");
-              } else {
-                resolve(stdout.trim());
+    const classificationResults = await new Promise((resolve, reject) => {
+      exec(
+        `python3 ./python_model/classifier.py "${extractPath}"`,
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error("Classification error:", stderr);
+            reject(error);
+          } else {
+            // Parse the classification results
+            const results = {};
+            stdout.trim().split('\n').forEach(line => {
+              if (line.includes(': ')) {
+                const [filePath, category] = line.split(': ');
+                results[path.basename(filePath)] = category.trim();
               }
-            }
-          );
-        });
+            });
+            resolve(results);
+          }
+        }
+      );
+    });
 
-        const cleanedCategory = classification
-          .replace("Predicted Category: ", "")
-          .replace(/\s+/g, "_");
+    // Organize files into category folders
+    for (const file of files) {
+      const sourceFilePath = path.join(extractPath, file);
+      
+      const category = classificationResults[file] || "Unclassified";
+      const cleanedCategory = category
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9_-]/g, "");
 
-        const categoryPath = path.join(classifiedOutputPath, cleanedCategory);
-        fs.mkdirSync(categoryPath, { recursive: true });
+      // Create category folder if it doesn't exist
+      const categoryPath = path.join(classifiedOutputPath, cleanedCategory);
+      fs.mkdirSync(categoryPath, { recursive: true });
 
-        const destinationPath = path.join(categoryPath, file);
-        fs.copyFileSync(filePath, destinationPath);
-
-        results[file] = classification;
-      } else {
-        results[file] = "Error: Unable to extract text";
-      }
+      // Copy file to category folder
+      const destinationPath = path.join(categoryPath, file);
+      fs.copyFileSync(sourceFilePath, destinationPath);
     }
 
+    // Create ZIP of classified documents
     const outputZipPath = path.join(uploadsDir, "classified_documents.zip");
     const output = fs.createWriteStream(outputZipPath);
     const archive = archiver("zip", { zlib: { level: 9 } });
@@ -224,9 +230,9 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
     return new Promise((resolve, reject) => {
       output.on("close", () => {
         res.json({
-          results,
+          results: classificationResults,
           downloadLink: "/download-classified-zip",
-          totalFiles: Object.keys(results).length,
+          totalFiles: Object.keys(classificationResults).length,
         });
         resolve();
       });
@@ -259,6 +265,49 @@ app.get("/download-classified-zip", (req, res) => {
 
     fs.rmSync(zipPath, { force: true });
   });
+});
+
+// Route to retrain the model
+app.post("/retrain-model", async (req, res) => {
+  try {
+    // Execute the Python script for model retraining
+    
+    const { stdout, stderr } = await execPromise(
+      "python3 ./python_model/retrain_on_feedback.py"
+    );
+
+    // Log both stdout and stderr for debugging
+    console.log("Standard Output:", stdout);
+    console.log("Standard Error:", stderr);
+
+    // Check if there's a meaningful error (ignore NLTK download messages)
+    const isActualError = stderr && 
+      !stderr.includes('[nltk_data]') && 
+      stderr.trim() !== '';
+
+    if (isActualError) {
+      console.error("Retraining error:", stderr);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Error during model retraining",
+        error: stderr 
+      });
+    }
+
+    console.log("Model retrained successfully:", stdout);
+    res.status(200).json({ 
+      success: true, 
+      message: "Model retrained successfully",
+      output: stdout 
+    });
+  } catch (error) {
+    console.error("Retraining failed:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to retrain model",
+      error: error.message 
+    });
+  }
 });
 
 // Start Server
