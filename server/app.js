@@ -14,7 +14,9 @@ const PORT = 5000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+// Serve static files including the uploads directory
 app.use(express.static(path.join(__dirname, "../public")));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const uploadsDir = path.join(__dirname, "uploads");
 const uploadedFilesDir = path.join(uploadsDir, "uploaded_files");
@@ -154,7 +156,6 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
 
   resetFeedbackLog();
 
-
   const zipFilePath = uploadedFile.path;
 
   try {
@@ -205,6 +206,7 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
     });
 
     // Organize files into category folders
+    const fileLinks = [];
     for (const file of files) {
       const sourceFilePath = path.join(extractPath, file);
       
@@ -217,9 +219,15 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
       const categoryPath = path.join(classifiedOutputPath, cleanedCategory);
       fs.mkdirSync(categoryPath, { recursive: true });
 
-      // Copy file to category folder
       const destinationPath = path.join(categoryPath, file);
       fs.copyFileSync(sourceFilePath, destinationPath);
+
+      const relativeFilePath = path.relative(path.join(__dirname, 'uploads'), destinationPath);
+      fileLinks.push({
+        fileName: file,
+        category: cleanedCategory,
+        link: `/uploads/${relativeFilePath.replace(/\\/g, '/')}`
+      });
     }
 
     // Create ZIP of classified documents
@@ -233,6 +241,7 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
           results: classificationResults,
           downloadLink: "/download-classified-zip",
           totalFiles: Object.keys(classificationResults).length,
+          fileLinks: fileLinks
         });
         resolve();
       });
@@ -262,7 +271,6 @@ app.get("/download-classified-zip", (req, res) => {
       console.error("Download error:", err);
       res.status(500).send("Could not download the file");
     }
-
     fs.rmSync(zipPath, { force: true });
   });
 });
@@ -271,16 +279,13 @@ app.get("/download-classified-zip", (req, res) => {
 app.post("/retrain-model", async (req, res) => {
   try {
     // Execute the Python script for model retraining
-    
     const { stdout, stderr } = await execPromise(
       "python ./python_model/retrain_on_feedback.py"
     );
 
-    // Log both stdout and stderr for debugging
     console.log("Standard Output:", stdout);
     console.log("Standard Error:", stderr);
 
-    // Check if there's a meaningful error (ignore NLTK download messages)
     const isActualError = stderr && 
       !stderr.includes('[nltk_data]') && 
       stderr.trim() !== '';

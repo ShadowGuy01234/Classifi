@@ -1,6 +1,9 @@
-# ClassiFi: AI-Based Document Classification System
 
-ClassiFi is an AI-powered document classification system designed to automate and streamline the organization of documents. Built using Node.js for the backend, Express.js for the server, and a customizable Python AI model, ClassiFi makes it easy to classify and organize large sets of documents across various industries.
+---
+
+# ClassiFi: ML-Based Document Classification System
+
+ClassiFi is an ML-powered document classification system designed to automate and streamline the organization of documents. Built using Node.js for the backend, Express.js for the server, and a customizable Python ML model, ClassiFi makes it easy to classify and organize large sets of documents across various industries.
 
 ---
 
@@ -8,7 +11,7 @@ ClassiFi is an AI-powered document classification system designed to automate an
 - **File Upload**: Upload ZIP files containing documents to classify.
 - **File Extraction**: Automatically extracts uploaded ZIP files for further processing.
 - **Multiple File Format Support**: Supports PPT, PDF, TXT, CSV, JSON, and DOCX files.
-- **AI Model Integration**: Uses a customizable Python-based model for document classification.
+- **ML Model Integration**: Uses a customizable Python-based model for document classification.
 - **Scalable Backend**: Built with Node.js and Express.js.
 - **Customizable Model Retraining**: Add labeled data and retrain the classification model as needed.
 - **Feedback Integration**: Allows users to provide feedback on classifications to improve model accuracy.
@@ -70,7 +73,13 @@ ClassiFi can be applied to various industries, including:
    pip install -r requirements.txt
    ```
 
-5. **Set Up Directories**:
+5. **Run the NLTK Setup Script**:  
+   Before running the main Python scripts, ensure necessary NLTK components are installed:
+   ```bash
+   python nltk_setup.py
+   ```
+
+6. **Set Up Directories**:
    Ensure the `uploads` directory is created for storing uploaded files:
    ```bash
    mkdir ../uploads
@@ -144,6 +153,7 @@ Classifi/
 ├── server/               # Backend server code
 │   ├── app.js            # Main server file for handling requests
 │   ├── python_model/     # Folder for Python model and related files
+│   │   ├── nltk.py       # NLTK setup script
 │   ├── uploads/          # Directory for storing uploaded files
 │   ├── feedback/         # Directory for storing feedback data
 │   └── package.json      # Project metadata and backend dependencies

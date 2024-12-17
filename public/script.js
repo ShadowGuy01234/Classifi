@@ -3,12 +3,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultDiv = document.getElementById("result");
   const fileInput = document.getElementById("documents");
   const loadingBar = document.getElementById("loadingBar");
-  const loadingBarProgress =
-    document.getElementById("loadingBarProgress");
+  const loadingBarProgress = document.getElementById("loadingBarProgress");
   const loadingText = document.getElementById("loadingText");
   const loadingPercentage = document.getElementById("loadingPercentage");
   const categoryChartCanvas = document.getElementById("categoryChart");
   const downloadButton = document.getElementById("downloadButton");
+  const retrainButton = document.getElementById("retrainButton");
+  const retrainingStatus = document.getElementById("retrainingStatus");
   let categoryChart;
   let downloadLink = null;
 
@@ -35,8 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (error) {
       console.error("Retraining error:", error);
-      retrainingStatus.textContent =
-        "An error occurred during retraining.";
+      retrainingStatus.textContent = "An error occurred during retraining.";
       retrainingStatus.style.color = "red";
     } finally {
       retrainButton.disabled = false;
@@ -62,9 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (error) {
       console.error("Download error:", error);
-      alert(
-        "An error occurred while downloading the classified documents."
-      );
+      alert("An error occurred while downloading the classified documents.");
     }
   });
 
@@ -123,39 +121,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const table = document.createElement("table");
         table.innerHTML = `
-    <tr>
-      <th>File Name</th>
-      <th>Predicted Category</th>
-      <th>Feedback</th>
-    </tr>
-  `;
+          <tr>
+            <th>File Name</th>
+            <th>Predicted Category</th>
+            <th>Feedback</th>
+          </tr>
+        `;
 
         const categoryCounts = {};
+
+        // Check if fileLinks exist in the response
+        const fileLinks = data.fileLinks || [];
 
         Object.entries(data.results).forEach(([fileName, category]) => {
           const cleanedCategory = category.replace(
             "Predicted Category: ",
             ""
           );
+          
+          // Find the corresponding file link
+          const fileLink = fileLinks.find(link => link.fileName === fileName);
+
           const row = document.createElement("tr");
           row.innerHTML = `
-      <td>${fileName}</td>
-      <td>${cleanedCategory}</td>
-      <td>
-        <form class="feedbackForm">
-          <select name="correctCategory">
-            <option value="Choose a Category" selected>Choose a Category</option>
-            <option value="business">business</option>
-            <option value="education">education</option>
-            <option value="healthcare">healthcare</option>
-            <option value="politics">politics</option>
-            <option value="sports">sports</option>
-            <option value="tech">tech</option>
-          </select>
-          <button type="submit" data-file="${fileName}" data-category="${cleanedCategory}">Submit</button>
-        </form>
-      </td>
-    `;
+            <td>
+              ${fileLink 
+                ? `<a href="${fileLink.link}" target="_blank" style="color: blue; text-decoration: underline;">${fileName}</a>`
+                : fileName
+              }
+            </td>
+            <td>${cleanedCategory}</td>
+            <td>
+              <form class="feedbackForm">
+                <select name="correctCategory">
+                  <option value="Choose a Category" selected>Choose a Category</option>
+                  <option value="business">business</option>
+                  <option value="education">education</option>
+                  <option value="healthcare">healthcare</option>
+                  <option value="politics">politics</option>
+                  <option value="sports">sports</option>
+                  <option value="tech">tech</option>
+                </select>
+                <button type="submit" data-file="${fileName}" data-category="${cleanedCategory}">Submit</button>
+              </form>
+            </td>
+          `;
           table.appendChild(row);
 
           if (!categoryCounts[cleanedCategory]) {
@@ -165,9 +175,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         resultDiv.innerHTML = `
-    <strong>Classification Results:</strong> 
-    <p>Total Documents Classified: ${data.totalFiles}
-  `;
+          <strong>Classification Results:</strong> 
+          <p>Total Documents Classified: ${data.totalFiles}
+        `;
         resultDiv.appendChild(table);
 
         document.querySelectorAll(".feedbackForm").forEach((form) => {
@@ -192,6 +202,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (response.ok) {
                   alert("Feedback submitted successfully!");
+                  // Remove the submit button and disable the select
+                  button.remove();
+                  form.querySelector("select").disabled = true;
                 } else {
                   alert("Failed to submit feedback.");
                 }
@@ -229,11 +242,15 @@ document.addEventListener("DOMContentLoaded", function () {
             },
           },
         });
+
+        // Optional: Log file links for debugging
+        console.log("Classified File Links:", fileLinks);
       }
     } catch (err) {
       updateProgressBar(100);
       loadingText.textContent = "Error";
-      resultDiv.innerHTML = `<strong>Error:</strong> Unable to classify documents.`;
+      resultDiv.innerHTML = `<strong>Error:</strong> Unable to classify documents. ${err.message}`;
+      console.error("Classification error:", err);
     }
 
     resultDiv.style.display = "block";
