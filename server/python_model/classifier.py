@@ -7,6 +7,7 @@ from pptx import Presentation
 import docx  
 import pandas as pd  
 import json
+import nltk
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 

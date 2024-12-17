@@ -1,165 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document Classifier</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f9;
-        color: #333;
-        text-align: center;
-        padding: 50px;
-      }
 
-      h1 {
-        color: #4caf50;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Classifier - Classifi</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
 
-      form {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        display: inline-block;
-      }
+<body>
+  <header>
+    <h1>Structify AI</h1>
+    <p>Revolutionizing Document Classification with AI
+    </p>
+    <a href="#documents"><button>ClassiFI Documents </button></a>
 
-      input[type="file"] {
-        margin: 10px 0;
-      }
+  </header>
 
-      button {
-        background: #4caf50;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin: 10px 0;
-      }
+  <main>
+    <h1>What is Structify AI?</h1>
+    <p style="margin-left: 185px; margin-right: 185px; font-size: larger; margin-bottom: 80px;">Structify is an
+      intelligent document classification platform designed to automate the organization of unstructured datasets. It
+      combines robust AI models with user feedback to deliver exceptional accuracy and adaptability.</p>
+    <div class="section what-is-classifi">
+      <div class="info-card">
+        <img src="./images/data-classification.png" alt="Easy Document Classification" />
+        <h3>Easy Document Classification</h3>
+        <p>Structify allows you to categorize documents with AI, saving time and effort.</p>
+      </div>
+      <div class="info-card">
+        <img src="./images/folder.png" alt="Multiple Categories" />
+        <h3>Supports Multiple Categories</h3>
+        <p>Structify supports business, healthcare, politics, and more.</p>
+      </div>
+      <div class="info-card">
+        <img src="./images/ai-assistant.png" alt="AI Powered" />
+        <h3>ML-Powered Accuracy</h3>
+        <p>Our system ensures accurate document classification with minimal errors.</p>
+      </div>
+    </div>
 
-      button:hover {
-        background: #45a049;
-      }
+    <h1>How Structify Works? </h1>
 
-      .loading-bar {
-        display: none;
-        margin-top: 20px;
-      }
+    <div class="section how-it-works">
+      <div class="step-card info-card">
+        <img src="./images/upload.png" alt="Step 1" />
+        <h3>Step 1: Upload Your Documents</h3>
+        <p>Start by uploading a ZIP file containing your documents.</p>
+      </div>
+      <div class="step-card info-card">
+        <img src="./images/brain.png" alt="Step 2" />
+        <h3>Step 2: Automated Classification</h3>
+        <p>The system analyzes the content and categorizes each document.</p>
+      </div>
+      <div class="step-card info-card">
+        <img src="./images/review.png" alt="Step 3" />
+        <h3>Step 3: User Review & Feedback</h3>
+        <p>Review results, provide feedback, and retrain for better accuracy.</p>
+      </div>
+      <div class="step-card info-card">
+        <img src="./images/downloads.png" alt="Step 4" />
+        <h3>Step 4: Download Classified Documents </h3>
+        <p>Get organized files in category-specific folders.</p>
+      </div>
+    </div>
 
-      .progress-bar {
-        width: 100%;
-        background-color: #f3f3f3;
-        border-radius: 10px;
-        overflow: hidden;
-      }
+    <div class="section industries">
+      <h1>Industries That Benefit From Structify </h1>
+      <div class="industry-grid">
+        <div class="industry-card info-card">
+          <img src="./images/healthcare.png" alt="Healthcare" />
+          <h4>Healthcare</h4>
+          <p>Effortlessly manage patient records and medical documents.</p>
+        </div>
+        <div class="industry-card info-card">
+          <img src="./images/budget.png" alt="Business" />
+          <h4>Business</h4>
+          <p>Organize invoices, reports, and other business documents.</p>
+        </div>
+        <div class="industry-card info-card">
+          <img src="./images/education.png" alt="Education" />
+          <h4>Education</h4>
+          <p>Streamline research papers, assignments, and reports.</p>
+        </div>
+        <div class="industry-card info-card">
+          <img src="./images/law.png" alt="Legal" />
+          <h4>Legal</h4>
+          <p>
+            Effortlessly manage legal contracts, case files, and compliance documents.
+          </p>
+        </div>
+        <div class="industry-card info-card">
+          <img src="./images/cooperation.png" alt="Finance" />
+          <h4>Finance</h4>
+          <p>
+            Categorize financial statements, investment reports, and audit documents.
+          </p>
+        </div>
+        <div class="industry-card info-card">
+          <img src="./images/it.png" alt="I.T." />
+          <h4>I.T.</h4>
+          <p>
+            Organize campaign briefs, market analysis, and content strategies effectively.
+          </p>
+        </div>
+      </div>
+    </div>
 
-      .progress-bar-inner {
-        width: 0%;
-        height: 20px;
-        background-color: #4caf50;
-        transition: width 0.3s ease-in-out;
-      }
-
-      #loadingText {
-        margin-top: 5px;
-      }
-
-      .output {
-        margin-top: 20px;
-        background: #fff;
-        padding: 15px;
-        border-radius: 5px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: left;
-      }
-
-      /* Table Styles */
-      table {
-        margin: 20px auto;
-        border-collapse: collapse;
-        width: 80%;
-        text-align: left;
-      }
-
-      table th,
-      table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-      }
-
-      table th {
-        background-color: #4caf50;
-        color: white;
-        text-align: center;
-      }
-
-      table tr:nth-child(even) {
-        background-color: #f2f2f2;
-      }
-
-      /* Chart Container */
-      .chart-container {
-        margin-top: 30px;
-        width: 80%;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      #downloadButton {
-        display: none;
-        margin-top: 15px;
-        padding: 10px 20px;
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-
-      #downloadButton:hover {
-        background-color: #45a049;
-      }
-      #retrainButton,
-      #downloadButton {
-        display: none;
-        margin-top: 15px;
-        padding: 10px 20px;
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-right: 10px;
-      }
-
-      #retrainButton:hover,
-      #downloadButton:hover {
-        background-color: #45a049;
-      }
-
-      #retrainingStatus {
-        margin-top: 15px;
-        color: #4caf50;
-        font-weight: bold;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Document Classifier</h1>
     <form id="uploadForm" enctype="multipart/form-data">
-      <label for="document"
-        >Upload a ZIP file containing documents to classify:</label
-      >
-      <input
-        type="file"
-        name="documents"
-        id="documents"
-        accept=".zip"
-        required
-      />
+      <label for="document">Upload a ZIP file containing documents to Classify:</label>
+      <input type="file" name="documents" id="documents" accept=".zip" required />
       <br />
       <button type="submit">Classify</button>
     </form>
@@ -180,269 +132,8 @@
     <div class="chart-container">
       <canvas id="categoryChart"></canvas>
     </div>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const uploadForm = document.getElementById("uploadForm");
-        const resultDiv = document.getElementById("result");
-        const fileInput = document.getElementById("documents");
-        const loadingBar = document.getElementById("loadingBar");
-        const loadingBarProgress =
-          document.getElementById("loadingBarProgress");
-        const loadingText = document.getElementById("loadingText");
-        const loadingPercentage = document.getElementById("loadingPercentage");
-        const categoryChartCanvas = document.getElementById("categoryChart");
-        const downloadButton = document.getElementById("downloadButton");
-        let categoryChart;
-        let downloadLink = null;
-
-        // Retrain model button click handler
-        retrainButton.addEventListener("click", async () => {
-          try {
-            // Disable the button and show loading status
-            retrainButton.disabled = true;
-            retrainingStatus.textContent = "Retraining model...";
-            retrainingStatus.style.color = "#4caf50";
-
-            // Send request to retrain the model
-            const response = await fetch("/retrain-model", {
-              method: "POST",
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-              retrainingStatus.textContent = "Model retrained successfully!";
-              retrainingStatus.style.color = "#4caf50";
-            } else {
-              retrainingStatus.textContent = `Retraining failed: ${result.message}`;
-              retrainingStatus.style.color = "red";
-            }
-          } catch (error) {
-            console.error("Retraining error:", error);
-            retrainingStatus.textContent =
-              "An error occurred during retraining.";
-            retrainingStatus.style.color = "red";
-          } finally {
-            // Re-enable the button
-            retrainButton.disabled = false;
-          }
-        });
-
-        downloadButton.addEventListener("click", async () => {
-          try {
-            const response = await fetch("/download-classified-zip");
-            if (response.ok) {
-              const blob = await response.blob();
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.style.display = "none";
-              a.href = url;
-              a.download = "classified_documents.zip";
-              document.body.appendChild(a);
-              a.click();
-              window.URL.revokeObjectURL(url);
-              document.body.removeChild(a);
-            } else {
-              alert("Could not download the classified documents.");
-            }
-          } catch (error) {
-            console.error("Download error:", error);
-            alert(
-              "An error occurred while downloading the classified documents."
-            );
-          }
-        });
-
-        uploadForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
-
-          resultDiv.style.display = "none";
-          downloadButton.style.display = "none";
-          loadingBar.style.display = "block";
-          loadingBarProgress.style.width = "0%";
-          loadingPercentage.textContent = "0%";
-
-          if (fileInput.files.length === 0) {
-            resultDiv.innerHTML = `<strong>Error:</strong> No file selected. Please upload a ZIP file.`;
-            resultDiv.style.display = "block";
-            return;
-          }
-
-          const file = fileInput.files[0];
-          if (!file.name.endsWith(".zip")) {
-            resultDiv.innerHTML = `<strong>Error:</strong> Please upload a valid ZIP file.`;
-            resultDiv.style.display = "block";
-            return;
-          }
-
-          const maxFileSize = 12 * 1024 * 1024;
-          if (file.size > maxFileSize) {
-            resultDiv.innerHTML = `<strong>Error:</strong> File size exceeds 12 MB.`;
-            resultDiv.style.display = "block";
-            return;
-          }
-
-          const formData = new FormData();
-          formData.append("documents", file);
-
-          simulateProgressBar();
-
-          try {
-            const response = await fetch("/classify-zip", {
-              method: "POST",
-              body: formData,
-            });
-
-            if (!response.ok) {
-              throw new Error(`${response.status} - ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            updateProgressBar(100);
-
-            if (data.error) {
-              resultDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
-            } else {
-              // Show the download and retrain button
-              downloadButton.style.display = "block";
-              retrainButton.style.display = "inline-block";
-
-              const table = document.createElement("table");
-              table.innerHTML = `
-          <tr>
-            <th>File Name</th>
-            <th>Predicted Category</th>
-            <th>Feedback</th>
-          </tr>
-        `;
-
-              const categoryCounts = {};
-
-              Object.entries(data.results).forEach(([fileName, category]) => {
-                const cleanedCategory = category.replace(
-                  "Predicted Category: ",
-                  ""
-                );
-                const row = document.createElement("tr");
-                row.innerHTML = `
-            <td>${fileName}</td>
-            <td>${cleanedCategory}</td>
-            <td>
-              <form class="feedbackForm">
-                <select name="correctCategory">
-                  <option value="Choose a Category" selected>Choose a Category</option>
-                  <option value="business">business</option>
-                  <option value="education">education</option>
-                  <option value="healthcare">healthcare</option>
-                  <option value="politics">politics</option>
-                  <option value="sports">sports</option>
-                  <option value="tech">tech</option>
-                </select>
-                <button type="submit" data-file="${fileName}" data-category="${cleanedCategory}">Submit</button>
-              </form>
-            </td>
-          `;
-                table.appendChild(row);
-
-                if (!categoryCounts[cleanedCategory]) {
-                  categoryCounts[cleanedCategory] = 0;
-                }
-                categoryCounts[cleanedCategory]++;
-              });
-
-              resultDiv.innerHTML = `
-          <strong>Classification Results:</strong> 
-          <p>Total Documents Classified: ${data.totalFiles}
-        `;
-              resultDiv.appendChild(table);
-
-              document.querySelectorAll(".feedbackForm").forEach((form) => {
-                form.addEventListener("submit", async (e) => {
-                  e.preventDefault();
-                  const button = e.target.querySelector("button");
-                  const fileName = button.getAttribute("data-file");
-                  const oldCategory = button.getAttribute("data-category");
-                  const newCategory = form.querySelector("select").value;
-
-                  if (newCategory !== "Choose a Category") {
-                    try {
-                      const response = await fetch("/submit-feedback", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          fileName,
-                          oldCategory,
-                          newCategory,
-                        }),
-                      });
-
-                      if (response.ok) {
-                        alert("Feedback submitted successfully!");
-                      } else {
-                        alert("Failed to submit feedback.");
-                      }
-                    } catch (error) {
-                      console.error("Feedback submission error:", error);
-                      alert("An error occurred while submitting feedback.");
-                    }
-                  }
-                });
-              });
-
-              if (categoryChart) {
-                categoryChart.destroy();
-              }
-              categoryChart = new Chart(categoryChartCanvas, {
-                type: "bar",
-                data: {
-                  labels: Object.keys(categoryCounts),
-                  datasets: [
-                    {
-                      label: "Number of Documents",
-                      data: Object.values(categoryCounts),
-                      backgroundColor: "rgba(75, 192, 192, 0.2)",
-                      borderColor: "rgba(75, 192, 192, 1)",
-                      borderWidth: 1,
-                    },
-                  ],
-                },
-                options: {
-                  responsive: true,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                    },
-                  },
-                },
-              });
-            }
-          } catch (err) {
-            updateProgressBar(100);
-            loadingText.textContent = "Error";
-            resultDiv.innerHTML = `<strong>Error:</strong> Unable to classify documents.`;
-          }
-
-          resultDiv.style.display = "block";
-          loadingBar.style.display = "none";
-        });
-
-        function simulateProgressBar() {
-          let progress = 0;
-          const interval = setInterval(() => {
-            if (progress >= 90) {
-              clearInterval(interval);
-            } else {
-              progress++;
-              updateProgressBar(progress);
-            }
-          }, 150);
-        }
-
-        function updateProgressBar(progress) {
-          loadingBarProgress.style.width = `${progress}%`;
-          loadingPercentage.textContent = `${progress}%`;
-        }
-      });
-    </script>
-  </body>
+  </main>
+</body>
+<footer style="background-color:rgb(11, 177, 215) ;text-align: center;font-size:22px;font-weight: 500;">© 2024 Structify
+  AI . All Rights Reserved</footer>
 </html>

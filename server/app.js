@@ -184,7 +184,7 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
 
     const classificationResults = await new Promise((resolve, reject) => {
       exec(
-        `python3 ./python_model/classifier.py "${extractPath}"`,
+        `python ./python_model/classifier.py "${extractPath}"`,
         (error, stdout, stderr) => {
           if (error) {
             console.error("Classification error:", stderr);
@@ -273,7 +273,7 @@ app.post("/retrain-model", async (req, res) => {
     // Execute the Python script for model retraining
     
     const { stdout, stderr } = await execPromise(
-      "python3 ./python_model/retrain_on_feedback.py"
+      "python ./python_model/retrain_on_feedback.py"
     );
 
     // Log both stdout and stderr for debugging

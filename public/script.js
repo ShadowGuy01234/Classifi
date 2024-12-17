@@ -3,13 +3,45 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultDiv = document.getElementById("result");
   const fileInput = document.getElementById("documents");
   const loadingBar = document.getElementById("loadingBar");
-  const loadingBarProgress = document.getElementById("loadingBarProgress");
+  const loadingBarProgress =
+    document.getElementById("loadingBarProgress");
   const loadingText = document.getElementById("loadingText");
   const loadingPercentage = document.getElementById("loadingPercentage");
   const categoryChartCanvas = document.getElementById("categoryChart");
   const downloadButton = document.getElementById("downloadButton");
   let categoryChart;
   let downloadLink = null;
+
+  // Retrain model button click handler
+  retrainButton.addEventListener("click", async () => {
+    try {
+      retrainButton.disabled = true;
+      retrainingStatus.textContent = "Retraining model...";
+      retrainingStatus.style.color = "rgb(11, 177, 215)";
+
+      // Send request to retrain the model
+      const response = await fetch("/retrain-model", {
+        method: "POST",
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        retrainingStatus.textContent = "Model retrained successfully!";
+        retrainingStatus.style.color = "rgb(11, 177, 215)";
+      } else {
+        retrainingStatus.textContent = `Retraining failed: ${result.message}`;
+        retrainingStatus.style.color = "red";
+      }
+    } catch (error) {
+      console.error("Retraining error:", error);
+      retrainingStatus.textContent =
+        "An error occurred during retraining.";
+      retrainingStatus.style.color = "red";
+    } finally {
+      retrainButton.disabled = false;
+    }
+  });
 
   downloadButton.addEventListener("click", async () => {
     try {
@@ -30,7 +62,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (error) {
       console.error("Download error:", error);
-      alert("An error occurred while downloading the classified documents.");
+      alert(
+        "An error occurred while downloading the classified documents."
+      );
     }
   });
 
@@ -84,41 +118,44 @@ document.addEventListener("DOMContentLoaded", function () {
       if (data.error) {
         resultDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
       } else {
-        // Show the download button
         downloadButton.style.display = "block";
+        retrainButton.style.display = "inline-block";
 
         const table = document.createElement("table");
         table.innerHTML = `
-          <tr>
-            <th>File Name</th>
-            <th>Predicted Category</th>
-            <th>Feedback</th>
-          </tr>
-        `;
+    <tr>
+      <th>File Name</th>
+      <th>Predicted Category</th>
+      <th>Feedback</th>
+    </tr>
+  `;
 
         const categoryCounts = {};
 
         Object.entries(data.results).forEach(([fileName, category]) => {
-          const cleanedCategory = category.replace("Predicted Category: ", "");
+          const cleanedCategory = category.replace(
+            "Predicted Category: ",
+            ""
+          );
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${fileName}</td>
-            <td>${cleanedCategory}</td>
-            <td>
-              <form class="feedbackForm">
-                <select name="correctCategory">
-                  <option value="Choose a Category" selected>Choose a Category</option>
-                  <option value="business">business</option>
-                  <option value="education">education</option>
-                  <option value="healthcare">healthcare</option>
-                  <option value="politics">politics</option>
-                  <option value="sports">sports</option>
-                  <option value="tech">tech</option>
-                </select>
-                <button type="submit" data-file="${fileName}" data-category="${cleanedCategory}">Submit</button>
-              </form>
-            </td>
-          `;
+      <td>${fileName}</td>
+      <td>${cleanedCategory}</td>
+      <td>
+        <form class="feedbackForm">
+          <select name="correctCategory">
+            <option value="Choose a Category" selected>Choose a Category</option>
+            <option value="business">business</option>
+            <option value="education">education</option>
+            <option value="healthcare">healthcare</option>
+            <option value="politics">politics</option>
+            <option value="sports">sports</option>
+            <option value="tech">tech</option>
+          </select>
+          <button type="submit" data-file="${fileName}" data-category="${cleanedCategory}">Submit</button>
+        </form>
+      </td>
+    `;
           table.appendChild(row);
 
           if (!categoryCounts[cleanedCategory]) {
@@ -128,9 +165,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         resultDiv.innerHTML = `
-          <strong>Classification Results:</strong> 
-          <p>Total Documents Classified: ${data.totalFiles}
-        `;
+    <strong>Classification Results:</strong> 
+    <p>Total Documents Classified: ${data.totalFiles}
+  `;
         resultDiv.appendChild(table);
 
         document.querySelectorAll(".feedbackForm").forEach((form) => {
