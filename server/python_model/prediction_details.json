@@ -1,0 +1,22 @@
+{
+    "test_paths": [
+        "./uploads/extracted\\sports\\sports_1.pptx",
+        "./uploads/extracted\\business\\business_2.pptx"
+    ],
+    "true_labels": [
+        "sports",
+        "business"
+    ],
+    "predicted_labels": [
+        "sports",
+        "business"
+    ],
+    "confidence_scores": {
+        "mean_confidence": 0.7117794957476367,
+        "median_confidence": 0.7117794957476367,
+        "min_confidence": 0.6082363773206236,
+        "max_confidence": 0.8153226141746498,
+        "incorrect_mean_confidence": 0.0,
+        "correct_mean_confidence": 0.7117794957476367
+    }
+}

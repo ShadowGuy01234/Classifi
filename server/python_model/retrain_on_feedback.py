@@ -21,9 +21,6 @@ from extract_text import (
 from collections import Counter
 
 def load_user_feedback(feedback_file):
-    """
-    Load user feedback from a JSON file.
-    """
     try:
         with open(feedback_file, 'r', encoding='utf-8') as f:
             feedback = json.load(f)
@@ -33,9 +30,6 @@ def load_user_feedback(feedback_file):
         return []
 
 def reorganize_files_by_feedback(uploads_dir, data_dir, feedback):
-    """
-    Reorganize files based on user feedback by moving them to correct directories.
-    """
     extracted_dir = os.path.join(uploads_dir, 'extracted')
     
     for entry in feedback:
@@ -43,7 +37,6 @@ def reorganize_files_by_feedback(uploads_dir, data_dir, feedback):
         old_category = entry['oldCategory']
         new_category = entry['newCategory']
         
-        # Construct full paths
         old_category_dir = os.path.join(data_dir, old_category)
         new_category_dir = os.path.join(data_dir, new_category)
         
@@ -51,7 +44,6 @@ def reorganize_files_by_feedback(uploads_dir, data_dir, feedback):
         
         os.makedirs(new_category_dir, exist_ok=True)
         
-        # Move file to new category directory
         try:
             if os.path.exists(file_path):
                 new_file_path = os.path.join(new_category_dir, filename)
@@ -63,12 +55,9 @@ def reorganize_files_by_feedback(uploads_dir, data_dir, feedback):
             print(f"Error moving {filename}: {e}")
 
 def load_labeled_data_from_dirs(data_dir):
-    """
-    Load labeled data from a directory where each subdirectory is a label.
-    """
     data = []
     labels = []
-    file_paths = []  # Track original file paths for confidence analysis
+    file_paths = []
     for label in os.listdir(data_dir):
         label_path = os.path.join(data_dir, label)
         if os.path.isdir(label_path):
@@ -95,12 +84,10 @@ def load_labeled_data_from_dirs(data_dir):
                     else:
                         continue
 
-                    # Check for empty content
                     if not content or content.startswith("Error"):
                         print(f"Skipping {file_path}: No extractable content")
                         continue
 
-                    # Clean and preprocess the text
                     clean_content = clean_text(content)
                     data.append(clean_content)
                     labels.append(label)
@@ -110,19 +97,16 @@ def load_labeled_data_from_dirs(data_dir):
     return data, labels, file_paths
 
 def analyze_model_confidence(y_test, y_pred, y_pred_proba):
-    """
-    Analyze model prediction confidence.
-    """
     confidence_scores = np.max(y_pred_proba, axis=1)
-    incorrect_mask = y_test != y_pred
+    incorrect_mask = np.array(y_test) != np.array(y_pred)
     
     return {
-        'mean_confidence': np.mean(confidence_scores),
-        'median_confidence': np.median(confidence_scores),
-        'min_confidence': np.min(confidence_scores),
-        'max_confidence': np.max(confidence_scores),
-        'incorrect_mean_confidence': np.mean(confidence_scores[incorrect_mask]),
-        'correct_mean_confidence': np.mean(confidence_scores[~incorrect_mask])
+        'mean_confidence': float(np.mean(confidence_scores)),
+        'median_confidence': float(np.median(confidence_scores)),
+        'min_confidence': float(np.min(confidence_scores)),
+        'max_confidence': float(np.max(confidence_scores)),
+        'incorrect_mean_confidence': float(np.mean(confidence_scores[incorrect_mask]) if np.any(incorrect_mask) else 0),
+        'correct_mean_confidence': float(np.mean(confidence_scores[~incorrect_mask]) if np.any(~incorrect_mask) else 0)
     }
 
 def retrain_model_with_feedback(
@@ -133,9 +117,6 @@ def retrain_model_with_feedback(
     vectorizer_path='./python_model/vectorizer.pkl',
     confidence_analysis_path='./python_model/confidence_analysis.json'
 ):
-    """
-    Retrain the model based on user feedback with enhanced confidence analysis.
-    """
     feedback = load_user_feedback(feedback_file)
     if not feedback:
         print("No feedback to process.")
@@ -214,8 +195,8 @@ def retrain_model_with_feedback(
     
     prediction_details = {
         'test_paths': test_paths,
-        'true_labels': y_test.tolist(),
-        'predicted_labels': y_pred.tolist(),
+        'true_labels': y_test,  
+        'predicted_labels': list(y_pred),
         'confidence_scores': confidence_results
     }
     
@@ -225,21 +206,14 @@ def retrain_model_with_feedback(
     print("Retraining and saving completed.")
 
 def predict_with_confidence(model_path, vectorizer_path, text):
-    """
-    Load saved model and vectorizer to make a prediction with confidence score.
-    """
-    # Load saved model and vectorizer
     vectorizer = joblib.load(vectorizer_path)
     classifier = joblib.load(model_path)
     
-    # Preprocess and vectorize input text
     processed_text = clean_text(text)
     text_vectorized = vectorizer.transform([processed_text])
     
-    # Predict with probability
     pred_proba = classifier.predict_proba(text_vectorized)
     
-    # Get prediction and confidence
     pred_label = classifier.classes_[np.argmax(pred_proba)]
     confidence = np.max(pred_proba)
     
