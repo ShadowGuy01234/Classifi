@@ -124,33 +124,40 @@ document.addEventListener("DOMContentLoaded", function () {
           <tr>
             <th>File Name</th>
             <th>Predicted Category</th>
+            <th>Confidence</th>
             <th>Feedback</th>
           </tr>
         `;
 
         const categoryCounts = {};
 
-        // Check if fileLinks exist in the response
-        const fileLinks = data.fileLinks || [];
-
-        Object.entries(data.results).forEach(([fileName, category]) => {
-          const cleanedCategory = category.replace(
-            "Predicted Category: ",
-            ""
-          );
-          
-          // Find the corresponding file link
-          const fileLink = fileLinks.find(link => link.fileName === fileName);
-
+        const fileLinks = Object.entries(data.results).map(([fileName, categoryInfo]) => {
+          let category = 'Unclassified';
+          let confidence = null;
+        
+          if (typeof categoryInfo === 'string') {
+            category = categoryInfo;
+          } else if (typeof categoryInfo === 'object') {
+            category = categoryInfo.category || 'Unclassified';
+            confidence = categoryInfo.confidence;
+          }
+        
+          return {
+            fileName: fileName,
+            category: category,
+            confidence: confidence,
+            link: data.fileLinks?.find(link => link.fileName === fileName)?.link || '#'
+          };
+        });
+        
+        fileLinks.forEach(fileLink => {
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>
-              ${fileLink 
-                ? `<a href="${fileLink.link}" target="_blank" style="color: blue; text-decoration: underline;">${fileName}</a>`
-                : fileName
-              }
+              <a href="${fileLink.link}" target="_blank" style="color: blue; text-decoration: underline;">${fileLink.fileName}</a>
             </td>
-            <td>${cleanedCategory}</td>
+            <td>${fileLink.category}</td>
+            <td>${fileLink.confidence !== null ? (fileLink.confidence * 100).toFixed(2) + '%' : 'N/A'}</td>
             <td>
               <form class="feedbackForm">
                 <select name="correctCategory">
@@ -162,18 +169,17 @@ document.addEventListener("DOMContentLoaded", function () {
                   <option value="sports">sports</option>
                   <option value="tech">tech</option>
                 </select>
-                <button type="submit" data-file="${fileName}" data-category="${cleanedCategory}">Submit</button>
+                <button type="submit" data-file="${fileLink.fileName}" data-category="${fileLink.category}">Submit</button>
               </form>
             </td>
           `;
           table.appendChild(row);
-
-          if (!categoryCounts[cleanedCategory]) {
-            categoryCounts[cleanedCategory] = 0;
+        
+          if (!categoryCounts[fileLink.category]) {
+            categoryCounts[fileLink.category] = 0;
           }
-          categoryCounts[cleanedCategory]++;
+          categoryCounts[fileLink.category]++;
         });
-
         resultDiv.innerHTML = `
           <strong>Classification Results:</strong> 
           <p>Total Documents Classified: ${data.totalFiles}
@@ -202,7 +208,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (response.ok) {
                   alert("Feedback submitted successfully!");
-                  // Remove the submit button and disable the select
                   button.remove();
                   form.querySelector("select").disabled = true;
                 } else {
@@ -243,7 +248,6 @@ document.addEventListener("DOMContentLoaded", function () {
           },
         });
 
-        // Optional: Log file links for debugging
         console.log("Classified File Links:", fileLinks);
       }
     } catch (err) {
@@ -272,5 +276,4 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateProgressBar(progress) {
     loadingBarProgress.style.width = `${progress}%`;
     loadingPercentage.textContent = `${progress}%`;
-  }
-});
+  }});

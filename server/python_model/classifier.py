@@ -1,6 +1,7 @@
 import sys
 import os
 import joblib
+import numpy as np
 from preprocess import clean_text  
 from PyPDF2 import PdfReader
 from pptx import Presentation
@@ -92,26 +93,41 @@ def classify_document(file_path):
             raise ValueError(f"Unsupported file type: {ext}")
     except Exception as e:
         print(f"Error extracting text from {file_path}: {e}")
-        return "Unclassified"
+        return {"category": "Unclassified", "confidence": 0.0, "probabilities": {}}
 
     if not content or len(content.strip()) == 0:
         print(f"Warning: No extractable text from {file_path}")
-        return "Unclassified"
+        return {"category": "Unclassified", "confidence": 0.0, "probabilities": {}}
 
     try:
         cleaned_content = clean_text(content)
     except Exception as e:
         print(f"Error during text preprocessing for {file_path}: {e}")
-        return "Unclassified"
+        return {"category": "Unclassified", "confidence": 0.0, "probabilities": {}}
 
-    # Vectorize and classify
+    # Vectorize and classify with confidence
     try:
         vectorized_content = vectorizer.transform([cleaned_content])
-        prediction = model.predict(vectorized_content)
-        return prediction[0]
+        
+        if hasattr(model, 'predict_proba'):
+            probabilities = model.predict_proba(vectorized_content)[0]
+            prediction = model.classes_[np.argmax(probabilities)]
+            confidence = float(np.max(probabilities))
+            
+            prob_dict = dict(zip(model.classes_, probabilities.tolist()))
+        else:
+            prediction = model.predict(vectorized_content)[0]
+            confidence = 1.0  
+            prob_dict = {}
+
+        return {
+            "category": prediction, 
+            "confidence": confidence, 
+            "probabilities": prob_dict
+        }
     except Exception as e:
         print(f"Error during classification for {file_path}: {e}")
-        return "Unclassified"
+        return {"category": "Unclassified", "confidence": 0.0, "probabilities": {}}
 
 def classify_directory(directory_path):
     """
@@ -149,12 +165,14 @@ if __name__ == "__main__":
             results = classify_directory(input_path)
             
             print("Classification Results:")
-            for file_path, category in results.items():
-                print(f"{file_path}: {category}")
+            for file_path, result in results.items():
+                print(f"{file_path}: Category={result['category']}, Confidence={result['confidence']:.4f}")
         else:
             # Classify a single file
-            predicted_category = classify_document(input_path)
-            print(f"{predicted_category}")
+            result = classify_document(input_path)
+            print(f"Category: {result['category']}")
+            print(f"Confidence: {result['confidence']:.4f}")
+            print("Probabilities:", result['probabilities'])
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)

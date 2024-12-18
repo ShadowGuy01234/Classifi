@@ -191,12 +191,19 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
             console.error("Classification error:", stderr);
             reject(error);
           } else {
-            // Parse the classification results
             const results = {};
             stdout.trim().split('\n').forEach(line => {
-              if (line.includes(': ')) {
-                const [filePath, category] = line.split(': ');
-                results[path.basename(filePath)] = category.trim();
+              try {
+                const match = line.match(/(.+): Category=(\w+), Confidence=([\d.]+)/);
+                if (match) {
+                  const [, filePath, category, confidence] = match;
+                  results[path.basename(filePath)] = {
+                    category: category.trim(),
+                    confidence: parseFloat(confidence)
+                  };
+                }
+              } catch (parseError) {
+                console.error(`Error parsing line: ${line}`, parseError);
               }
             });
             resolve(results);
@@ -210,7 +217,13 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
     for (const file of files) {
       const sourceFilePath = path.join(extractPath, file);
       
-      const category = classificationResults[file] || "Unclassified";
+      const classificationInfo = classificationResults[file] || { 
+        category: "Unclassified",
+        confidence: null,
+        probabilities: null 
+      };
+      const category = classificationInfo.category;
+      
       const cleanedCategory = category
         .replace(/\s+/g, "_")
         .replace(/[^a-zA-Z0-9_-]/g, "");
@@ -226,6 +239,8 @@ app.post("/classify-zip", upload.single("documents"), async (req, res) => {
       fileLinks.push({
         fileName: file,
         category: cleanedCategory,
+        confidence: classificationInfo.confidence,
+        probabilities: classificationInfo.probabilities,
         link: `/uploads/${relativeFilePath.replace(/\\/g, '/')}`
       });
     }
